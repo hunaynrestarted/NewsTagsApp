@@ -1,0 +1,169 @@
+﻿@model NewsTagsApp.ViewModels.NewsTagsViewModel
+
+@{
+    ViewBag.Title = "News";
+}
+
+<link href="~/Content/Custom.css" rel="stylesheet" />
+
+<div class="container">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <b>News</b> (Via LocalDB and Entity)
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-xs-8">
+                    <div class="input-group">
+                        <div class="form-outline">
+                            <input type="search" oninput="search(this.value)" value="@ViewBag.search" placeholder="News, Tags" name="search" id="form1" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-4">
+
+                    <div class="pull-right" style="margin-bottom: 5px;">
+                        <button class="btn btn-default" id="export">Export as an Image</button>
+                        <button class="btn btn-default" onclick="generate()">Export as PDF</button>
+                    </div>
+                </div>
+            </div>
+            <div id="tblid">
+                @Html.Partial("_List")
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+
+
+@section scripts{
+    <script src="~/Scripts/jquery-3.4.1.js"></script>
+    <script src="~/Scripts/html2canvas.js"></script>
+    <script src="~/Scripts/jspdf.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jspdf.plugin.autotable.min.js"></script>
+
+    <script type="text/javascript">
+
+        function generate() {
+            var doc = new jspdf.jsPDF()
+
+            // Simple html example
+            doc.autoTable({ html: '#news-table' })
+
+            doc.save('exportPdf.pdf')
+        }
+
+        $('#export').on('click', function () {
+            console.log('exporting');
+            //$('#news-table').tableExport({type:'png',escape:'false'});
+
+            html2canvas($('#news-table'), {
+                onrendered: function (canvas) {
+                    var img = canvas.toDataURL("image/png");
+                    //var img = canvas.toDataURL("application/octet-stream");
+
+                    function saveAs(uri, filename) {
+                        var link = document.createElement('a');
+                        if (typeof link.download === 'string') {
+                            document.body.appendChild(link);
+                            link.download = filename;
+                            link.href = uri;
+                            link.click();
+                            document.body.removeChild(link);
+                        } else {
+                            location.replace(uri);
+                        }
+                    }
+
+                    var uri = img.replace(/^data:image\/[^;]/, 'data:application/octet-stream');
+                    //window.open(url);
+                    saveAs(uri, 'exportPng.png');
+
+
+                }
+            });
+        });
+
+
+        function search(v) {
+            setTimeout(function () {
+                $.ajax({
+                    type: "get",
+                    contentType: 'application/json',
+                    url: "/home/DataSearch",
+
+                    data: { news: v },
+                    success: function (data) {
+
+                        var response = data;
+                        $("#tblid").html(data);
+
+                    },
+                    error: function (xhr, err) {
+                        //alert("readyState: " + xhr.readyState + "\nstatus: " + xhr.status);
+                        //alert("responseText: " + xhr.responseText);
+                    }
+
+                });
+            }, 0.3)
+
+        }
+
+
+
+    </script>
+
+    <script>
+        function sortTable(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("news-table");
+            switching = true;
+
+            dir = "asc";
+
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+
+                    if (dir == "asc") {
+                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+
+                    switchcount++;
+                } else {
+
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+}

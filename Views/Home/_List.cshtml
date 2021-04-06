@@ -1,0 +1,63 @@
+﻿
+<link href="~/Content/Custom.css" rel="stylesheet" />
+
+<table class="table table-bordered" id="news-table">
+    <thead>
+        <tr>
+            <th class="thStyle">S.No</th>
+            <th onclick="sortTable(0)" class="thStyle">News Title</th>
+            <th onclick="sortTable(1)" class="thStyle">Tag Name</th>
+            <th class="thStyle">Published?</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!--Binding the data in the List-->
+        @if (Model.ListNewsTags != null)
+        {
+            for (int i = 0; i < Model.ListNewsTags.Count; i++)
+            {
+                <tr>
+                    <td>@(i+1)</td>
+                    <td>@Model.ListNewsTags[i].NewsTitle</td>
+                    <td>@Model.ListNewsTags[i].TagName</td>
+                    <td>@(Model.ListNewsTags[i].IsPublished ? "Yes": "No")</td>
+                </tr>
+            }
+        }
+    </tbody>
+
+</table>
+
+<!-- Paging -->
+@if (Model.Pager.EndPage > 1)
+{
+    <ul class="pagination">
+        <!--If Current page is not the First Page, we will show Button/Link to go First or on Previous page-->
+        @if (Model.Pager.CurrentPage > 1)
+        {
+            @*<li>
+                    <a href="~/Home/Index">First</a>
+                </li>*@
+            <li>
+                <a href="~/Home/Index?page=@(Model.Pager.CurrentPage - 1)">Previous</a>
+            </li>
+        }
+        <!--Paging from StartPage to the end Page-->
+        @*@for (var page = Model.Pager.StartPage; page <= Model.Pager.EndPage; page++)
+            {
+                <li class="@(page == Model.Pager.CurrentPage ? "active" : "")">
+                    <a href="~/Home/Index?page=@page">@page</a>
+                </li>
+            }*@
+        <!--If Current Page is not the Last Page then show Next and Last Button/link on Paging-->
+        @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
+        {
+            <li>
+                <a href="~/Home/Index?page=@(Model.Pager.CurrentPage + 1)">Next</a>
+            </li>
+            @*<li>
+                    <a href="~/Home/Index?page=@(Model.Pager.TotalPages)">Last</a>
+                </li>*@
+        }
+    </ul>
+}
